@@ -3,6 +3,7 @@
 package com.example.aifieldassistant.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -19,8 +20,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.aifieldassistant.data.local.entity.ReportEntity
+import com.example.aifieldassistant.ui.theme.AIFieldAssistantTheme
 
 import com.example.aifieldassistant.ui.viewmodel.ReportViewModel
 import java.text.SimpleDateFormat
@@ -31,7 +35,8 @@ import java.util.Locale
 @Composable
 fun HistoryScreen(
     viewModel: ReportViewModel,
-    onFabClick: () -> Unit
+    onFabClick: () -> Unit,
+    onItemClick: (Int) -> Unit
 ) {
     // Lắng nghe dữ liệu thật từ Room Database
     val reportList by viewModel.allReports.collectAsState()
@@ -41,16 +46,16 @@ fun HistoryScreen(
             TopAppBar(
                 title = { Text("AI Field Assistant", fontWeight = FontWeight.Bold) },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    containerColor = Color(0xFF00695C),
+                    titleContentColor = Color.White
                 )
             )
         },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onFabClick,
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
+                containerColor = Color(0xFF00695C),
+                contentColor = Color.White
             ) {
                 Icon(Icons.Filled.Add, contentDescription = "Tạo báo cáo")
             }
@@ -75,7 +80,7 @@ fun HistoryScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(reportList) { report ->
-                    ReportCard(report)
+                    ReportCard(report = report, onClick = { onItemClick(report.id) })
                 }
             }
         }
@@ -83,7 +88,7 @@ fun HistoryScreen(
 }
 
 @Composable
-fun ReportCard(report: ReportEntity) {
+fun ReportCard(report: ReportEntity, onClick: () -> Unit) {
     // Xử lý màu sắc dựa trên mức độ ưu tiên
     val priorityColor = when (report.priority?.uppercase()) {
         "HIGH", "CAO" -> Color(0xFFD32F2F)
@@ -97,8 +102,9 @@ fun ReportCard(report: ReportEntity) {
     val dateString = dateFormat.format(Date(report.timestamp))
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
+
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
@@ -154,11 +160,3 @@ fun ReportCard(report: ReportEntity) {
         }
     }
 }
-//@Preview(showBackground = true, showSystemUi = true)
-//@Composable
-//fun HistoryScreenPreview() {
-//    // Tạm thời dùng MaterialTheme mặc định nếu bạn chưa cấu hình xong ViVuTheme
-//    AIFieldAssistantTheme {
-//        HistoryScreen(onFabClick = {})// Gọi hàm giao diện chính của bạn vào đây
-//    }
-//}

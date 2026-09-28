@@ -1,16 +1,17 @@
+package com.example.aifieldassistant.ui.screens
+
 import android.Manifest
 import android.content.pm.PackageManager
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.ImageCapture
-
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.material.icons.filled.ArrowBack
+
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,18 +19,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
-
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import com.example.aifieldassistant.ui.screens.CameraPreview
-import com.example.aifieldassistant.ui.screens.HistoryScreen
-import com.example.aifieldassistant.ui.screens.takePhoto
+import com.example.aifieldassistant.R
 import com.example.aifieldassistant.ui.theme.AIFieldAssistantTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CaptureScreen() {
+fun CaptureScreen(
+    onImageCaptured: (String) -> Unit, // Callback trả đường dẫn ảnh
+    onBackClick: () -> Unit            // Callback đóng màn hình
+) {
     val context = LocalContext.current
     var hasCameraPermission by remember {
         mutableStateOf(
@@ -42,7 +44,6 @@ fun CaptureScreen() {
         onResult = { granted -> hasCameraPermission = granted }
     )
 
-    // Khởi tạo đối tượng ImageCapture để chụp ảnh
     val imageCapture = remember { ImageCapture.Builder().build() }
 
     LaunchedEffect(Unit) {
@@ -52,7 +53,17 @@ fun CaptureScreen() {
     }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Chụp ảnh hiện trường") }) }
+        topBar = {
+            TopAppBar(
+                title = { Text("Chụp ảnh hiện trường") },
+                navigationIcon = {
+                    // Thêm nút Back để người dùng có thể hủy chụp ảnh
+                    IconButton(onClick = onBackClick) {
+                        Icon(painter = painterResource(R.drawable.back), contentDescription = "Quay lại",Modifier.size(25.dp))
+                    }
+                }
+            )
+        }
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -62,11 +73,10 @@ fun CaptureScreen() {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             if (hasCameraPermission) {
-                // Khung chứa Camera thật
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(1f) // Chiếm phần lớn màn hình
+                        .weight(1f)
                         .clip(RoundedCornerShape(12.dp))
                         .background(Color.Black)
                 ) {
@@ -75,22 +85,23 @@ fun CaptureScreen() {
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Nút chụp ảnh
                 Button(
                     onClick = {
                         val executor = ContextCompat.getMainExecutor(context)
                         takePhoto(imageCapture, context, executor) { file ->
-                            Toast.makeText(context, "Đã lưu ảnh: ${file.name}", Toast.LENGTH_SHORT).show()
-                            // TODO: Lưu đường dẫn file này vào ViewModel để lát gửi cho AI
+                            Toast.makeText(context, "Đã lưu ảnh", Toast.LENGTH_SHORT).show()
+                            // Trả đường dẫn tuyệt đối về cho NavHost
+                            onImageCaptured(file.absolutePath)
                         }
                     },
                     modifier = Modifier.size(72.dp),
                     shape = RoundedCornerShape(50)
                 ) {
-                    Icon(Icons.Filled.Add, contentDescription = "Chụp ảnh", modifier = Modifier.size(32.dp))
+                    Icon(painter = painterResource(R.drawable.camera), contentDescription = "Chụp ảnh", modifier = Modifier.size(32.dp))
                 }
             } else {
                 Text("Cần cấp quyền camera để tiếp tục.")
+                Spacer(modifier = Modifier.height(8.dp))
                 Button(onClick = { permissionLauncher.launch(Manifest.permission.CAMERA) }) {
                     Text("Cấp quyền")
                 }
@@ -99,11 +110,14 @@ fun CaptureScreen() {
     }
 }
 
-@Preview(showBackground = true, showSystemUi = true)
+@Preview(showBackground = true)
 @Composable
 fun CaptureScreenPreview() {
-    // Tạm thời dùng MaterialTheme mặc định nếu bạn chưa cấu hình xong ViVuTheme
     AIFieldAssistantTheme {
-        CaptureScreen()// Gọi hàm giao diện chính của bạn vào đây
+        // Truyền callback rỗng vào Preview để không bị báo đỏ
+        CaptureScreen(
+            onImageCaptured = {},
+            onBackClick = {}
+        )
     }
 }

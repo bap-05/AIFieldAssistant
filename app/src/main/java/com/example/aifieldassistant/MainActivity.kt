@@ -12,6 +12,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.aifieldassistant.data.local.AppDatabase
 import com.example.aifieldassistant.data.repository.ReportRepository
+import com.example.aifieldassistant.ui.screens.CaptureScreen
 import com.example.aifieldassistant.ui.screens.CreateReportScreen
 import com.example.aifieldassistant.ui.screens.HistoryScreen
 import com.example.aifieldassistant.ui.theme.AIFieldAssistantTheme
@@ -36,13 +37,19 @@ class MainActivity : ComponentActivity() {
                 composable("history") {
                     HistoryScreen(
                         viewModel = viewModel,
-                        onFabClick = { navController.navigate("create") }
+                        onFabClick = { navController.navigate("create") },
+                        onItemClick = { reportId ->
+                            navController.navigate("detail/$reportId") // Bấm vào 1 item sang màn hình Chi tiết
+                        }
                     )
                 }
 
                 // Màn hình 2: Tạo báo cáo mới
-                composable("create") {
+                composable("create") {backStackEntry ->
+                    // Lấy đường dẫn ảnh từ Camera trả về (nếu có)
+                    val capturedImagePath = backStackEntry.savedStateHandle.get<String>("imagePath")
                     CreateReportScreen(
+                        imagePath = capturedImagePath,
                         onBackClick = { navController.popBackStack() },
                         onSubmit = { text, imagePath ->
                             // Lưu nháp vào Room
@@ -50,6 +57,22 @@ class MainActivity : ComponentActivity() {
 
                             // Quay về màn hình chính
                             navController.popBackStack()
+                        },
+                        onOpenCamera = {
+                            navController.navigate("capture")
+                        }
+                    )
+
+                }
+                composable("capture") {
+                    CaptureScreen(
+                        onImageCaptured = { imagePath ->
+                            // Trả đường dẫn ảnh về cho màn hình "create"
+                            navController.previousBackStackEntry?.savedStateHandle?.set("imagePath", imagePath)
+                            navController.popBackStack() // Tự động đóng camera
+                        },
+                        onBackClick = {
+                            navController.popBackStack() // Đóng camera khi bấm nút Back
                         }
                     )
                 }
