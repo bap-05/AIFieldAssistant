@@ -25,5 +25,5 @@ data class ReportEntity(
     // "PENDING": Mất mạng, đang chờ gửi lên AI/Server
     // "SYNCED": Đã xử lý thành công
     // "FAILED": Lỗi, cần thử lại
-    val syncStatus: String = "PENDING"
+    val syncStatus: String = "SYNCED"
 )

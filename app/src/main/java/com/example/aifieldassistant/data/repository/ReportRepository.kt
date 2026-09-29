@@ -20,4 +20,10 @@ class ReportRepository(private val reportDao: ReportDao) {
     suspend fun getPendingReports(): List<ReportEntity> {
         return reportDao.getPendingReports()
     }
+    fun getReportById(id: Int): Flow<ReportEntity?> {
+        return reportDao.getReportById(id)
+    }
+    suspend fun deleteReport(report: ReportEntity) {
+        reportDao.deleteReport(report)
+    }
 }

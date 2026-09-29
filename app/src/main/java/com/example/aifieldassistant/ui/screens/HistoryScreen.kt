@@ -1,4 +1,3 @@
-@file:Suppress("DEPRECATION")
 
 package com.example.aifieldassistant.ui.screens
 
@@ -11,6 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -36,7 +36,8 @@ import java.util.Locale
 fun HistoryScreen(
     viewModel: ReportViewModel,
     onFabClick: () -> Unit,
-    onItemClick: (Int) -> Unit
+    onItemClick: (Int) -> Unit,
+
 ) {
     // Lắng nghe dữ liệu thật từ Room Database
     val reportList by viewModel.allReports.collectAsState()
@@ -80,7 +81,7 @@ fun HistoryScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(reportList) { report ->
-                    ReportCard(report = report, onClick = { onItemClick(report.id) })
+                    ReportCard(report = report, onClick = { onItemClick(report.id)} )
                 }
             }
         }
@@ -131,7 +132,11 @@ fun ReportCard(report: ReportEntity, onClick: () -> Unit) {
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = dateString, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                    Text(
+                        text = dateString,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.Gray
+                    )
 
                     if (report.priority != null) {
                         Spacer(modifier = Modifier.width(8.dp))
@@ -148,15 +153,34 @@ fun ReportCard(report: ReportEntity, onClick: () -> Unit) {
             }
 
             Column(horizontalAlignment = Alignment.End) {
-                if (report.syncStatus == "SYNCED") {
-                    Icon(Icons.Filled.CheckCircle, contentDescription = "Đã lưu", tint = Color(0xFF388E3C))
-                    Text("Đã lưu", style = MaterialTheme.typography.labelSmall, color = Color(0xFF388E3C))
+                if (report.syncStatus == "COMPLETED") {
+                    Icon(
+                        Icons.Filled.CheckCircle,
+                        contentDescription = "Đã lưu",
+                        tint = Color(0xFF388E3C)
+                    )
+                    Text(
+                        "Đã lưu",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color(0xFF388E3C)
+                    )
                 } else {
                     // Trạng thái PENDING hoặc FAILED
-                    Icon(Icons.Filled.Warning, contentDescription = "Chờ mạng", tint = Color(0xFFF57C00))
-                    Text("Chờ xử lý", style = MaterialTheme.typography.labelSmall, color = Color(0xFFF57C00))
+                    Icon(
+                        Icons.Filled.Warning,
+                        contentDescription = "Chờ mạng",
+                        tint = Color(0xFFF57C00)
+                    )
+                    Text(
+                        "Chờ xử lý",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color(0xFFF57C00)
+                    )
+
+
                 }
             }
         }
     }
+
 }

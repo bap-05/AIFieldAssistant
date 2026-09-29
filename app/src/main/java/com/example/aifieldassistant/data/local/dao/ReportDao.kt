@@ -1,6 +1,7 @@
 package com.example.aifieldassistant.data.local.dao
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -26,4 +27,7 @@ interface ReportDao {
     // 4. Lấy các báo cáo đang chờ đồng bộ khi thiết bị ngoại tuyến
     @Query("SELECT * FROM reports WHERE syncStatus = 'PENDING'")
     suspend fun getPendingReports(): List<ReportEntity>
+    @Query("SELECT * FROM reports WHERE id = :id") fun getReportById(id: Int): Flow<ReportEntity?>
+    @Delete
+    suspend fun deleteReport(report: ReportEntity)
 }
